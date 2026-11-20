@@ -1,0 +1,122 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var VIIRS = ee.ImageCollection("NOAA/VIIRS/DNB/MONTHLY_V1/VCMCFG"),
+    kandal = ee.FeatureCollection("projects/applied-light-512003-g3/assets/kandal_province"),
+    phnom_penh = ee.FeatureCollection("projects/applied-light-512003-g3/assets/phnom_penh"),
+    airport = /* color: #0b4a8b */ee.FeatureCollection(
+        [ee.Feature(
+            ee.Geometry.Point([104.85026583426229, 11.550504643856302]),
+            {
+              "system:index": "0"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([104.93129000418416, 11.360054924875765]),
+            {
+              "system:index": "1"
+            })]),
+    port = /* color: #98ff00 */ee.FeatureCollection(
+        [ee.Feature(
+            ee.Geometry.Point([105.14356469459592, 11.471821141478424]),
+            {
+              "system:index": "0"
+            })]),
+    manufacturing = /* color: #00ffff */ee.FeatureCollection(
+        [ee.Feature(
+            ee.Geometry.Point([105.25001584579634, 11.379605258830251]),
+            {
+              "system:index": "0"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([104.70470723380429, 11.490275003573434]),
+            {
+              "system:index": "1"
+            })]),
+    residential = /* color: #638b42 */ee.FeatureCollection(
+        [ee.Feature(
+            ee.Geometry.Point([104.91628218842713, 11.480627170914392]),
+            {
+              "system:index": "0"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([104.91000557754738, 11.508273959107203]),
+            {
+              "system:index": "1"
+            })]),
+    industrial = /* color: #bf04c2 */ee.FeatureCollection(
+        [ee.Feature(
+            ee.Geometry.Point([105.08269864063338, 11.535639720656711]),
+            {
+              "system:index": "0"
+            })]),
+    crime = /* color: #ffc82d */ee.FeatureCollection(
+        [ee.Feature(
+            ee.Geometry.Point([105.07010829843794, 10.954471761524916]),
+            {
+              "system:index": "0"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([105.058480328367, 10.955913879247651]),
+            {
+              "system:index": "1"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([105.0284679424366, 10.942143124044833]),
+            {
+              "system:index": "2"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([105.05334953956826, 10.941897966807062]),
+            {
+              "system:index": "3"
+            })]);
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+var ROI = phnom_penh.merge(kandal).union();
+var data_2425 = VIIRS.filterDate('2024-09-01', '2025-09-01');
+var data_2526 = VIIRS.filterDate('2025-09-01', '2026-09-01');
+
+// Method takes in the dataset images and filters out cloud coverage less than 2.
+// Updates the images and returns the filtered images back.
+function imageProcess(image) {
+  var cloudImage = image.select('cf_cvg');
+  var filteredCloudImage = cloudImage.gt(2);
+  return image.updateMask(filteredCloudImage);
+}
+
+// Map datasets
+var unprocessed_2425 = data_2425.select('avg_rad').mean().clip(ROI);
+var unprocessed_2526 = data_2526.select('avg_rad').mean().clip(ROI);
+var processed_2425 = data_2425.map(imageProcess).select('avg_rad').mean().clip(ROI);
+var processed_2526 = data_2526.map(imageProcess).select('avg_rad').mean().clip(ROI);
+var ntl_diff = processed_2526.subtract(processed_2425);
+
+// Map layer parameters
+var param = {min: 0, max:60, palette: ['000000', '00FF00']};
+var param_diff = {min: -15, max: 15, palette: ['FF0000', '000000', '00FF00']};
+
+Map.addLayer(unprocessed_2425, param, 'unprocessed 2025-2026');
+Map.addLayer(unprocessed_2526, param, 'unprocessed 2024-2025');
+Map.addLayer(processed_2526, param, 'processed 2025-2026');
+Map.addLayer(processed_2425, param, 'processed 2024-2025');
+Map.addLayer(ntl_diff, param_diff, 'night time light difference');
+Map.setCenter(104.8885, 11.5621, 10);
+
+
+// Marker export
+//Export.table.toDrive({
+//  collection: residential, 
+//  description: 'Residential', 
+//  folder: 'earthengine', 
+//  fileFormat: 'GEO_JSON'
+//});
+// Images export
+//Export.image.toDrive({
+//  image: unprocessed_2526.unmask(-9999).visualize(param),
+//  description: 'raw2526',
+//  folder: 'earthengine',
+//  fileNamePrefix: 'raw2526',
+//  region: ROI,
+//  scale: 20,
+//  maxPixels: 1e13,
+//  formatOptions: {
+//    noData: -9999
+//  }
+//});

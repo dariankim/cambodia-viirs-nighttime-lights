@@ -2,7 +2,7 @@
 This repository contains the Google Earth Engine (GEE) scripts, QGIS template, and research paper for examining urbanization and spatial nighttime light trends across Phnom Penh and Kandal Province, Cambodia from 9/1/2024 to 9/1/2026. The code processes VIIRS Day/Night Band composites to find recent light changes.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/dariankim/cambodia-viirs-nighttime-lights/mainimage results/ROI.png" width="270">
+  <img src="https://raw.githubusercontent.com/dariankim/cambodia-viirs-nighttime-lights/main/image results/ROI.png" width="270">
   <img src="https://raw.githubusercontent.com/dariankim/cambodia-viirs-nighttime-lights/main/image results/difference.png"  width="270">
   <img src="https://raw.githubusercontent.com/dariankim/cambodia-viirs-nighttime-lights/main/image results/difference with markers.png" width="270">
 </p>
